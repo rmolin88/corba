@@ -1,0 +1,9 @@
+module SavingsAccount
+{
+	interface Account
+	{
+		float getBalance();
+		float withdraw(in float withdrawalAmount);
+		float deposit(in float depositAmount);
+	};
+};
