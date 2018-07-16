@@ -1,0 +1,20 @@
+interface StudentInfo
+{
+	// struct StudentData
+	// {
+		// long StudId;
+		// string Name;
+		// string SSN;
+		// string EmailAddress;
+		// string HomePhone;
+		// string HomeAddress;
+		// string LocalAddress;
+		// string EmergencyContact;
+		// long ProgramId;
+		// string PaymentId;
+		// long AcademicStatus;
+	// };
+
+	long SetStudentData();
+	void GetStudentData();
+};

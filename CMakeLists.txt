@@ -9,6 +9,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_SOURCE_DIR}/cmake/Mo
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+find_package(RapidJSON REQUIRED)
+
 find_package(GLog REQUIRED)
 
 find_package(GTest REQUIRED)
@@ -16,7 +18,7 @@ find_package(GTest REQUIRED)
 # Build with c++14 support, required by sc2api.
 set(CMAKE_CXX_STANDARD 17)
 
-# add_subdirectory("src")
+add_subdirectory("src")
 
 option(ENABLE_TESTS "Build tests" ON)
 if(ENABLE_TESTS)

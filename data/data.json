@@ -1,0 +1,13 @@
+{
+	"StudId": 1111,
+	"Name": "Bob Smith",
+	"SSN" : "222-333-1111l",
+	"EmailAddress": "bsmith@yahoo.com",
+	"HomePhone": "215-777-8888",
+	"HomeAddr":, "123 Tulip Road, Ambler, PA 19002",
+	"LocalAddr":, "321 Maple Avenue, Lion Town, PA 16800",
+	"EmergencyContact: ":, "John Smith (215-222-6666)",
+	"ProgramID":, 206,
+	"PaymentID":, "1111-206",
+	"AcademicStatus":, 1
+}
