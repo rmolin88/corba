@@ -18,11 +18,13 @@ class StudentInfo_i : public POA_StudentInfo
 {
 	rapidjson::Document data;
 	int load_json();
+	void enter(const rapidjson::Value &obj, size_t indent = 0);
 public:
 	StudentInfo_i() 
 	{ 
 		if (load_json() != 1)
 			throw std::runtime_error("Failed to load json data");
+		enter(data);
 	}
 	virtual ~StudentInfo_i() {}
 	virtual CORBA::Long SetStudentData();
@@ -31,15 +33,31 @@ public:
 
 CORBA::Long StudentInfo_i::SetStudentData()
 {
-	// TODO-[RM]-(Mon Jul 16 2018 09:15):  
-	// Load all the data.json and output to screen
-	// Need to save it somewhere
-	return 8888;
+	// Reload the data
+	if (load_json() != 1)
+	{
+		LOG(ERROR) << "Failed to load json data";
+		return -1;
+	}
+
+	// if (data.Empty())
+	// {
+		// LOG(ERROR) << "json file is empty";
+		// return -2;
+	// }
+	return 1;
 }
 
 void StudentInfo_i::GetStudentData()
 {
-	LOG(INFO) << "We are here";
+	// if (data.Empty())
+	// {
+		// LOG(ERROR) << "json file is empty";
+		// return;
+	// }
+
+	// Show the data
+	enter(data);
 }
 
 TEST(Corba, OmniorbStudentDataServer)
@@ -61,6 +79,9 @@ TEST(Corba, OmniorbStudentDataServer)
 
 		LOG(INFO) << sior;
 		ASSERT_TRUE(bindObjectToName(orb, obj));
+
+		ASSERT_FALSE(CORBA::is_nil(orb));
+		ASSERT_FALSE(CORBA::is_nil(obj));
 
 		PortableServer::POAManager_var pman = poa->the_POAManager();
 		pman->activate();
@@ -98,7 +119,7 @@ int StudentInfo_i::load_json()
 
 		if (ifs.is_open() == false)
 		{
-			LOG(ERROR) << "Failed to open file: ./data.json\n";
+			LOG(ERROR) << "Failed to open file: data.json\n";
 			return -2;
 		}
 
@@ -174,6 +195,18 @@ static CORBA::Boolean bindObjectToName(CORBA::ORB_ptr orb, CORBA::Object_ptr obj
 				return 0;
 			}
 		}
+		// Bind objref with name Echo to the testContext:
+		CosNaming::Name objectName;
+		objectName.length(1);
+		objectName[0].id   = (const char*) "Json";   // string copied
+		objectName[0].kind = (const char*) "Object"; // string copied
+
+		try {
+			testContext->bind(objectName, objref);
+		}
+		catch(CosNaming::NamingContext::AlreadyBound& ex) {
+			testContext->rebind(objectName, objref);
+		}
 	}
 	catch (CORBA::TRANSIENT& ex) {
 		LOG(ERROR) << "Caught system exception TRANSIENT -- unable to contact the "
@@ -189,4 +222,60 @@ static CORBA::Boolean bindObjectToName(CORBA::ORB_ptr orb, CORBA::Object_ptr obj
 		return 0;
 	}
 	return 1;
+}
+
+void StudentInfo_i::enter(const rapidjson::Value &obj, size_t indent)
+{ //print JSON tree
+	using rapidjson::Value;
+	if (obj.IsObject())
+	{ //check if object
+		for (Value::ConstMemberIterator itr = obj.MemberBegin(); itr != obj.MemberEnd(); ++itr) 
+		{   //iterate through object   
+			const Value& objName = obj[itr->name.GetString()]; //make object value
+
+			for (size_t i = 0; i != indent; ++i) //indent
+				LOG(INFO) << " ";
+
+			LOG(INFO) << itr->name.GetString() << ": "; //key name
+
+			if (itr->value.IsNumber()) //if integer
+				LOG(INFO) << itr->value.GetInt() ;
+
+			else if (itr->value.IsString()) //if string
+				LOG(INFO) << itr->value.GetString();
+
+			else if (itr->value.IsBool()) //if bool
+				LOG(INFO) << itr->value.GetBool();
+
+			else if (itr->value.IsArray())
+			{ //if array
+
+				for (rapidjson::SizeType i = 0; i < itr->value.Size(); i++) {
+					if (itr->value[i].IsNumber()) //if array value integer
+						LOG(INFO) << itr->value[i].GetInt() ;
+
+					else if (itr->value[i].IsString()) //if array value string
+						LOG(INFO) << itr->value[i].GetString() ;
+
+					else if (itr->value[i].IsBool()) //if array value bool
+						LOG(INFO) << itr->value[i].GetBool() ;
+
+					else if (itr->value[i].IsObject()){ //if array value object
+						LOG(INFO) << "\n  ";
+						const Value& m = itr->value[i]; 
+						for (auto& v : m.GetObject()) { //iterate through array object
+							if (m[v.name.GetString()].IsString()) //if array object value is string
+								LOG(INFO) << v.name.GetString() << ": " <<   m[v.name.GetString()].GetString();
+							else //if array object value is integer
+								LOG(INFO) << v.name.GetString() << ": "  <<  m[v.name.GetString()].GetInt();
+
+							LOG(INFO) <<  "\t"; //indent
+						}
+					}
+					LOG(INFO) <<  "\t"; //indent
+				}
+			}
+			enter(objName, indent + 1); //if couldn't find in object, enter object and repeat process recursively 
+		}     
+	}
 }
