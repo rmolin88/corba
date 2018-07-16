@@ -8,7 +8,8 @@ include_directories(SYSTEM
 # Add executable and list sources to the executable
 add_executable(test_corba_client 
 		test_corba_client.cpp
-		${CMAKE_SOURCE_DIR}/src/accountSK.cc
+		${CMAKE_SOURCE_DIR}/src/echoSK.cc
+		${CMAKE_SOURCE_DIR}/src/echo_client.cc
 	)
 
 # Link test executable against gtest & gtest_main
